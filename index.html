@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="my">
 <head>
@@ -6,70 +7,133 @@
 <title>SOE RECAP MYANMAR</title>
 <style>
 body {
-  background: #101827;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-  padding: 20px;
+  background:#101827;color:white;
+  font-family:Arial,sans-serif;
+  text-align:center;padding:16px;
 }
 .box {
-  background: #1e293b;
-  padding: 22px;
-  border-radius: 15px;
-  max-width: 500px;
-  margin: 30px auto;
+  background:#1e293b;padding:20px;
+  border-radius:15px;max-width:500px;
+  margin:20px auto;
 }
-button, input {
-  margin: 12px;
-  padding: 12px;
-  border-radius: 8px;
+input,button {
+  margin:10px;padding:12px;
+  border-radius:8px;max-width:100%;
 }
 button {
-  background: #e0ae35;
-  border: none;
-  font-weight: bold;
+  background:#e0ae35;border:0;
+  font-weight:bold;cursor:pointer;
 }
-video {
-  width: 100%;
-  margin-top: 15px;
-}
+video,audio {width:100%;margin-top:12px;}
+.section {margin:22px 0;padding:12px;background:#263449;border-radius:10px;}
+#status {color:#facc15;overflow-wrap:anywhere;}
 </style>
 </head>
 <body>
 <div class="box">
 <h2>SOE RECAP MYANMAR</h2>
-<p>Video Translation App</p>
+<p>ဗီဒီယိုကို မြန်မာအသံပြောင်းရန်</p>
 
+<div class="section">
+<h3>၁။ ဗီဒီယိုရွေးပါ</h3>
 <input type="file" id="videoFile" accept="video/*">
-
 <video id="preview" controls hidden></video>
+</div>
 
-<p id="status">ဗီဒီယိုရွေးချယ်ပါ။</p>
+<div class="section">
+<h3>၂။ နမူနာအသံဖိုင်ရွေးပါ</h3>
+<input type="file" id="audioFile" accept="audio/*">
+<audio id="audioPreview" controls hidden></audio>
+</div>
 
-<button onclick="startApp()">စတင်လုပ်ဆောင်မည်</button>
+<div class="section">
+<h3>၃။ ဖုန်းနဲ့ အသံသွင်းပါ</h3>
+<button id="recordBtn">အသံစသွင်းမည်</button>
+<button id="stopBtn" disabled>အသံရပ်မည်</button>
+<audio id="recordedAudio" controls hidden></audio>
+</div>
+
+<p id="status">ဗီဒီယိုနဲ့ အသံဖိုင် ရွေးချယ်ပါ။</p>
+<button id="startBtn">စတင်လုပ်ဆောင်မည်</button>
 </div>
 
 <script>
-const input = document.getElementById("videoFile");
+const videoFile = document.getElementById("videoFile");
+const audioFile = document.getElementById("audioFile");
 const preview = document.getElementById("preview");
-const status = document.getElementById("status");
+const audioPreview = document.getElementById("audioPreview");
+const recordedAudio = document.getElementById("recordedAudio");
+const statusText = document.getElementById("status");
+const recordBtn = document.getElementById("recordBtn");
+const stopBtn = document.getElementById("stopBtn");
 
-input.addEventListener("change", function() {
-  if (input.files.length) {
-    preview.src = URL.createObjectURL(input.files[0]);
-    preview.hidden = false;
-    status.textContent = "ဗီဒီယိုရွေးချယ်ပြီးပါပြီ။";
+let recorder;
+let chunks = [];
+let recordedBlob = null;
+
+videoFile.onchange = () => {
+  if (!videoFile.files.length) return;
+  preview.src = URL.createObjectURL(videoFile.files[0]);
+  preview.hidden = false;
+  statusText.textContent = "ဗီဒီယို ရွေးချယ်ပြီးပါပြီ။";
+};
+
+audioFile.onchange = () => {
+  if (!audioFile.files.length) return;
+  audioPreview.src = URL.createObjectURL(audioFile.files[0]);
+  audioPreview.hidden = false;
+  statusText.textContent = "နမူနာအသံ ရွေးချယ်ပြီးပါပြီ။";
+};
+
+recordBtn.onclick = async () => {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({audio:true});
+    chunks = [];
+    recorder = new MediaRecorder(stream);
+
+    recorder.ondataavailable = e => {
+      if (e.data.size > 0) chunks.push(e.data);
+    };
+
+    recorder.onstop = () => {
+      recordedBlob = new Blob(chunks, {type: recorder.mimeType});
+      recordedAudio.src = URL.createObjectURL(recordedBlob);
+      recordedAudio.hidden = false;
+      stream.getTracks().forEach(track => track.stop());
+      statusText.textContent = "အသံသွင်းပြီးပါပြီ။";
+    };
+
+    recorder.start();
+    recordBtn.disabled = true;
+    stopBtn.disabled = false;
+    statusText.textContent = "အသံသွင်းနေပါသည်။";
+  } catch (err) {
+    statusText.textContent = "Microphone အသုံးပြုခွင့် ပေးပါ။";
   }
-});
+};
 
-function startApp() {
-  if (!input.files.length) {
-    status.textContent = "ဗီဒီယိုအရင်ရွေးချယ်ပါ။";
+stopBtn.onclick = () => {
+  if (recorder && recorder.state === "recording") {
+    recorder.stop();
+    recordBtn.disabled = false;
+    stopBtn.disabled = true;
+  }
+};
+
+document.getElementById("startBtn").onclick = () => {
+  if (!videoFile.files.length) {
+    statusText.textContent = "ဗီဒီယိုအရင်ရွေးပါ။";
     return;
   }
-  status.textContent =
-    "ဗီဒီယိုရပါပြီ။ AI ဘာသာပြန်စနစ် ချိတ်ဆက်ရန် လိုအပ်ပါသည်။";
-}
+
+  if (!audioFile.files.length && !recordedBlob) {
+    statusText.textContent = "နမူနာအသံဖိုင်ရွေးပါ သို့မဟုတ် အသံသွင်းပါ။";
+    return;
+  }
+
+  statusText.textContent =
+    "ဖိုင်များ အဆင်သင့်ဖြစ်ပါပြီ။ AI ဘာသာပြန်နဲ့ အသံပေါင်းစနစ် ချိတ်ဆက်ရန် လိုအပ်ပါသည်။";
+};
 </script>
 </body>
 </html>
