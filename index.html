@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="my">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SOE RECAP MYANMAR</title>
+<style>
+body {
+  background: #101827;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+  padding: 20px;
+}
+.box {
+  background: #1e293b;
+  padding: 22px;
+  border-radius: 15px;
+  max-width: 500px;
+  margin: 30px auto;
+}
+button, input {
+  margin: 12px;
+  padding: 12px;
+  border-radius: 8px;
+}
+button {
+  background: #e0ae35;
+  border: none;
+  font-weight: bold;
+}
+video {
+  width: 100%;
+  margin-top: 15px;
+}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>SOE RECAP MYANMAR</h2>
+<p>Video Translation App</p>
+
+<input type="file" id="videoFile" accept="video/*">
+
+<video id="preview" controls hidden></video>
+
+<p id="status">ဗီဒီယိုရွေးချယ်ပါ။</p>
+
+<button onclick="startApp()">စတင်လုပ်ဆောင်မည်</button>
+</div>
+
+<script>
+const input = document.getElementById("videoFile");
+const preview = document.getElementById("preview");
+const status = document.getElementById("status");
+
+input.addEventListener("change", function() {
+  if (input.files.length) {
+    preview.src = URL.createObjectURL(input.files[0]);
+    preview.hidden = false;
+    status.textContent = "ဗီဒီယိုရွေးချယ်ပြီးပါပြီ။";
+  }
+});
+
+function startApp() {
+  if (!input.files.length) {
+    status.textContent = "ဗီဒီယိုအရင်ရွေးချယ်ပါ။";
+    return;
+  }
+  status.textContent =
+    "ဗီဒီယိုရပါပြီ။ AI ဘာသာပြန်စနစ် ချိတ်ဆက်ရန် လိုအပ်ပါသည်။";
+}
+</script>
+</body>
+</html>
